@@ -1,0 +1,363 @@
+//Glut
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.Writer;
+
+public class Glut extends JFrame implements ActionListener 
+{
+    JCheckBox jcb3[];//复选框
+	JComboBox jcb1,jcb2;//下拉列表框
+	JLabel jlb;
+	int num=1,max=10,style=0,m=0;
+	JButton start;//开始按钮
+	JTextField[] jtf=new JTextField[50];//文本框
+	FourOperations[] t=new FourOperations[10];//生成十个四则运算
+	
+	public Glut()
+	{
+
+		JToolBar jtb = new JToolBar();   //建立容器		
+		this.getContentPane().add(jtb, "North");
+		
+		String str[][]={{"题目个数 ："},{"加","减","乘","除","括号","小数"},{"运算范围0~: "}};		
+		
+		//题目个数
+		jlb=new JLabel(str[0][0]);
+		jlb.setFont(new Font("宋体", 1, 14));// 设置字体样式
+		jlb.setForeground(Color.BLACK);// 设置字体颜色
+		jtb.add(jlb);
+		Integer num1[]={1,2,3,4,5,6,7,8,9};
+		this.jcb1=new JComboBox<Integer>(num1);
+		this.jcb1.addActionListener(this);
+		jtb.add(this.jcb1);
+		
+		//运算符
+		jlb=new JLabel("  选择运算符： ");
+		jlb.setFont(new Font("宋体", 1, 14));// 设置字体样式
+		jlb.setForeground(Color.BLACK);// 设置字体颜色
+		jtb.add(jlb);
+		this.jcb3=new JCheckBox[str[1].length];
+		for (int i=0;i<str[1].length;i++)
+		{
+			this.jcb3[i]=new JCheckBox(str[1][i]);
+			jtb.add(this.jcb3[i]);
+			this.jcb3[i].addActionListener(this);
+		}
+		
+		//运算范围
+		jlb=new JLabel(str[2][0]);
+		jlb.setFont(new Font("宋体", 1, 14));// 设置字体样式
+		jlb.setForeground(Color.BLACK);// 设置字体颜色
+		jtb.add(jlb);
+		Integer max[]={10,20,30,40,50,60,70,80,90,100};
+		this.jcb2=new JComboBox(max);
+		this.jcb2.addActionListener(this);
+		jtb.add(this.jcb2);
+		jtb.add(new JLabel("     "));
+		
+		
+		//出题
+		this.start=new JButton(new ImageIcon("D:/四则运算/3.png"));
+		this.start.addActionListener(this);
+		jtb.add(start);
+		
+		//文本
+		JPanel jp=new JPanel();
+		this.getContentPane().add(jp, "Center");		
+		jp.setLayout(new GridLayout(0,3));	
+		for (int i=0;i<9;i++)
+		{			
+			this.jtf[i]=new JTextField (" ");
+			jp.add(this.jtf[i]);
+		}
+		this.setVisible(true);
+		
+		//窗口属性
+	    this.setVisible(true);
+		this.setSize(1000,300);
+		this.setTitle("四则运算生成器");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setLocationRelativeTo(null);
+		
+	}
+	
+	//选择部分
+	public void start()
+	{
+		if (style==0||style==16||style==32) 
+		{
+			JOptionPane.showMessageDialog(this, "选择错误！请重新选择！");
+     		return;
+		}
+		for (int i=0;i<num;i++)
+		{
+		
+			t[i]=new FourOperations(max,style);
+			t[i].Creat();
+			this.jtf[i].setText(t[i].QuiZ);
+		}
+		m++;
+	}
+	
+	//生成文本并显示
+    public  void Print() throws Exception
+    {
+            File file = new File("D:" + File.separator + "四则运算" + File.separator + "四则运算.txt");
+            if(!file.getParentFile().exists()){
+                file.getParentFile().mkdirs();
+            }
+            Writer fw = new FileWriter(file);
+            for (int i=0;i<num;i++)
+            {
+            	
+            	fw.write(t[i].QuiZ);
+            	fw.write("\r\n");
+            }
+            fw.close();
+            JOptionPane.showMessageDialog(this, "题目已保存至D : 四则运算.txt !");
+     }
+	
+    @Override	
+	public void actionPerformed(ActionEvent ee)
+	{
+    	// TODO 自动生成的方法存根
+		if (ee.getSource()==this.start)
+		{
+			start();
+		}
+		try 
+		{
+			Print();
+		} 
+		catch (Exception e) 
+		{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		}
+
+		if (ee.getSource()instanceof JComboBox||ee.getSource()instanceof JCheckBox||ee.getSource()instanceof JMenuItem)
+		{
+			//题目数量选择
+			Object obj=this.jcb1.getSelectedItem();
+			num=((Integer)obj).intValue();
+			//最大值选择
+			Object obj1=this.jcb2.getSelectedItem();
+			max=((Integer)obj1).intValue();
+			//运算符号选择
+			if (ee.getActionCommand().equals("加")) 
+			{style=style^1; }
+			if (ee.getActionCommand().equals("减")) 
+			{style=style^2;} 
+			if (ee.getActionCommand().equals("乘")) 
+			{style=style^4;}
+			if (ee.getActionCommand().equals("除")) 
+			{style=style^8;} 
+			if (ee.getActionCommand().equals("括号")) 
+			{style=style^16;} 
+			if (ee.getActionCommand().equals("小数")) 
+			{style=style^32;}
+		}
+		
+
+		
+	}
+
+	public static void main(String args[])
+	{
+		new Glut();
+	}
+}
+//FourOperations
+public class FourOperations {
+	private int max,kuohao,xiaoshu;
+	private double[] Num=new double[10],yunsuan=new double[10];
+	public String symbol=" ",qz,select=" ",connect=" ",NewSymbol=" ";
+	public FourOperations(int Max,int style)
+	{
+		max=Max;
+		if ((style & 1)==1) symbol=symbol+"+";
+		if ((style & 2)==2) symbol=symbol+"-";
+		if ((style & 4)==4) symbol=symbol+"*";
+		if ((style & 8)==8) symbol=symbol+"/";
+		if ((style & 16)==16) kuohao=1;
+		if ((style & 32)==32) xiaoshu=1;
+	}
+	
+	
+	public void Creat()
+	{	
+		Num[0]=getnum();
+		for(int i=1;i<=(int)(Math.random()*3)+1;i++)
+		{
+			Num[i]=getnum();
+			getchar();
+			connect=connect+select;
+		}
+		Creat_File();
+		Display();
+		qz=qz+"=";
+	}
+	
+ 	private void Display()
+	{
+		int no=1,ni=0;
+		qz=" ";
+		if (kuohao==1 && connect.charAt(1)=='(')
+		{
+			  while(true)
+			  {
+				  if (no>=connect.length()) break;
+				  qz=qz+connect.substring(no,no+1);
+				  if (connect.charAt(no)==')')
+				  {
+					  no++;
+					  if (no>=connect.length()) break;
+					  qz=qz+connect.substring(no,no+1);
+			      }
+				  if (xiaoshu==1)qz=qz+String.valueOf(Num[ni]);
+				  else qz=qz+String.valueOf((int)Num[ni]);
+				  ni++;no++;
+				  if (no==connect.length()) break;
+			  }
+		}
+		else if (kuohao==1&&connect.charAt(1)!='(')
+		{
+			if (xiaoshu==1) qz=qz+String.valueOf(Num[0]);
+			  else qz=qz+String.valueOf((int)Num[0]);
+			ni++;
+			while(true)
+			  {
+				if (no>=connect.length()) break;
+				qz=qz+connect.substring(no,no+1);
+				no++;
+				if (no>=connect.length()) break;
+				  if (connect.charAt(no)=='(')
+				  {
+					  //no++;
+					  qz=qz+connect.substring(no,no+1);
+			      }
+				  else no--;
+				  if (connect.charAt(no)==')'&&no<connect.length())
+				  {
+					  no++;
+					  qz=qz+connect.substring(no,no+1);
+			      }
+				  if (xiaoshu==1) qz=qz+String.valueOf(Num[ni]);
+				  else qz=qz+String.valueOf((int)Num[ni]);
+				  ni++;no++;
+				  if (no==connect.length()) break;
+			  }
+		}
+		else if(kuohao==0)
+		{
+			if (xiaoshu==1) qz=qz+String.valueOf(Num[ni]);
+			  else qz=qz+String.valueOf((int)Num[ni]);
+			ni++;
+			while(true)
+			  {
+				if (no>=connect.length()) break;
+				qz=qz+connect.substring(no,no+1);
+				if (xiaoshu==1) 
+					{qz=qz+String.valueOf(Num[ni]);}
+				  else 
+					  {qz=qz+String.valueOf((int)Num[ni]);}
+				 ni++;
+				 no++;
+				 if (no>=connect.length()) break;
+			  }
+		}
+	}
+	
+	private void Creat_File()
+	{
+		if (kuohao==1)
+		{
+		int id=Math.abs((int)(Math.random()*(connect.length()-1))); 
+		String temp1,temp_mid,temp_2;
+		temp1=connect.substring(0, id+1);
+		temp_mid=connect.substring(id+1,id+2);
+		if ((id+2) < (connect.length()))  
+			temp_2=connect.substring(id+2,connect.length());
+		else 
+			temp_2="";
+		
+		connect=temp1+"("+temp_mid+")"+temp_2;
+		NewSymbol=temp1+temp_2;
+		if (id==1)
+		{
+			if (connect.charAt(1)=='+') 
+				yunsuan[0] = Num[0]+Num[1];
+			else if (connect.charAt(1)=='-') 
+				yunsuan[0] = Num[0]-Num[1];
+			else if (connect.charAt(1)=='*') 
+				yunsuan[0] = Num[0]*Num[1];
+			else if (connect.charAt(1)=='/') 
+				yunsuan[0] = Num[0]/Num[1];
+			for (int i=2;i<Num.length;i++)
+			{
+				yunsuan[i-1]=Num[i];
+			}
+		}
+		else if (id==2)
+		{
+				yunsuan[0]=Num[0];
+			if (connect.charAt(3)=='+') 
+				yunsuan[1]=Num[1]+Num[2];
+			else if (connect.charAt(3)=='-') 
+				yunsuan[1]=Num[1]-Num[2];
+			else if (connect.charAt(3)=='*') 
+				yunsuan[1]=Num[1]*Num[2];
+			else if (connect.charAt(3)=='/') 
+				yunsuan[1]=Num[1]/Num[2];
+			for (int i=3;i<Num.length;i++)
+			{
+				yunsuan[i-1]=Num[i];
+			}
+			
+		}
+		else if (id==3)
+		{
+			yunsuan[0]=Num[0];
+			yunsuan[1]=Num[1];
+			if (connect.charAt(3)=='+') 
+				yunsuan[2]=Num[2]+Num[3];
+			else if (connect.charAt(3)=='-') 
+				yunsuan[2]=Num[2]-Num[3];
+			else if (connect.charAt(3)=='*') 
+				yunsuan[2]=Num[2]*Num[3];
+			else if (connect.charAt(3)=='/') 
+				yunsuan[2]=Num[2]/Num[3];
+		}
+		}
+		else
+		{
+			NewSymbol=connect;
+			for (int i=0;i<Num.length;i++)
+			{
+				yunsuan[i]=Num[i];
+			}
+		}
+		if (xiaoshu==0)
+		{
+			for (int i=0;i<yunsuan.length;i++)
+				yunsuan[i]=(int) yunsuan[i];
+		}
+	}
+	
+	private double getnum()
+	{
+		double a=(Math.random()*max)+1;
+		a=((int)(a*100))/100.0;
+		return (a);
+	}
+	 
+	public void getchar()
+	{
+		int Mark=(int)(Math.random()*(symbol.length()-1))+1;
+		select=symbol.substring(Mark, Mark+1);
+	}
+
+}
